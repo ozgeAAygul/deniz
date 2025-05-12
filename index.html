@@ -17,11 +17,11 @@
     .container {
       text-align: center;
       background-color: rgb(77, 143, 77);
-      padding: 100px;
-      border-radius: 50px;
+      padding: 20px;
+      border-radius: 10px;
       box-shadow: 15px 35px 60px rgba(0, 0, 0, 0.9);
       max-width: 400px;
-      width: 100%;
+      width: 99%;
     }
     button{
       background-color: rgb(2, 48, 2);
@@ -42,9 +42,26 @@
 
     #weather-info, #outfit-suggestion {
             margin-top: 20px;
-            
         }
 
+    /*Yükleniyor animasyonu*/    
+    #loading {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 20px;
+    }
+    .spinner{
+      width: 30px;
+      height: 30px;
+      border: 4px solid black;
+      border-radius: 50%;
+      margin: 0 auto 1s linear infinite;
+    }
+    @keyframes spin {
+      0% {transform: rotate(0deg);}
+      100% {transform: rotate(360deg);}
+      
+    }
     
      
 </style>
@@ -54,6 +71,13 @@
 <div class="container">
   <h1 >clothing  recommendations</h1>
   <button onclick="getWeather()">find out the weather</button>
+  <!--Yükleniyor animasyonu-->
+  <div id="loading" style="display: none;">
+    <div class="spinner"></div>
+    <p>Yükleniyor...</p>
+  </div>
+
+
   <div id="weather-info"></div>
   <div id="outfit-suggestion"></div>
 </div>
@@ -61,6 +85,10 @@
 <script>
   async function getWeather() { // bu fonksiyonun içinde veri almak istiyoruz ve bu işlem uzun sürecek ya sayfa donmasın başka kodları çalıştırsın diye fonksiyonun async olarak tanımlarım ama bu yetmeye bilir o yüzden extra awake kullanacaz
     if(navigator.geolocation) { //tarayıcının geolocation(kullanıcının mevcut konum bilgilerini almayı sağlar) API desteği olup olmadığını kontrol ediyor.
+
+      //Yükleniyor animasyonu göster
+      document.getElementById('loading').style.display = 'block';
+
       navigator.geolocation.getCurrentPosition(async (position) => { //burda getCurrentPosition fonksiyonu çalışıp position geri çevriliyor. 
       const lat = position.coords.latitude;
       const lon = position.coords.longitude; //enlem ve boylamı alıp değişken atadı
@@ -72,11 +100,16 @@
         const data = await response.json(); //gelen yanıtı json diline çevirir
         const weather = data.weather[0].description;
         const temp = data.main.temp;
+        const icon = data.weather[0].icon;
+        const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
+
+       
 
         document.getElementById('weather-info').innerHTML =  `
                         <p>Hava Durumu: ${weather}</p>
                         <p>Sıcaklık: ${temp}°C</p>
                         <p>Nem: ${data.main.humidity}%</p>
+                         <img src="${iconUrl}" alt="Weather Icon">
                     `;
                     let outfit = "";
                     if (temp > 25) {
@@ -95,12 +128,20 @@
                     }
 
                     document.getElementById('outfit-suggestion').innerText = `Önerilen Kıyafet: ${outfit}`;
+
+                    //Yükleniyor animasyonunu gizle
+                    document.getElementById('loading').style.display = 'none';
+
                   } catch (error) {
                     document.getElementById('outfit-suggestion').innerText = "Hava durumu alınamadı.";
 
+                  document.getElementById('loading').style.display = 'none';
                   }
       }, () => {
         document.getElementById('weather-info').innerText = "Konum bilgisi alınamadı.";
+
+        document.getElementById('loading').style.display = 'none';
+        
       });
     } else {
       document.getElementById('weather-info').innerText = "Tarayıcınız konum bilgisini desteklemiyor.";
